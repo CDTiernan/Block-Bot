@@ -1,4 +1,8 @@
+# -*- coding: utf-8 -*-
+# Python3.4*
+
 import copy
+
 
 class Field:
     def __init__(self):
@@ -35,7 +39,7 @@ class Field:
         return piece
 
     def __checkIfPieceFits(self, piecePositions):
-        for x,y in piecePositions:
+        for x, y in piecePositions:
             if 0 <= x < self.width and 0 <= y < self.height:
                 if self.field[y][x] > 1:
                     return False
@@ -51,7 +55,7 @@ class Field:
 
         field = copy.deepcopy(self.field)
         if self.__checkIfPieceFits(piece):
-            for x,y in piece:
+            for x, y in piece:
                 field[y][x] = 4
 
             return field

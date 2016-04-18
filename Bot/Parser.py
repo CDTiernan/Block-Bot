@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# Python3.4*
+
 from Bot.Game import Piece
 
 
@@ -45,12 +48,13 @@ class Parser:
 
     def updateGame(self, values):
         if values[0] == 'this_piece_position':
-            self._game.piecePosition = tuple(map(lambda x: int(x), values[1].split(',')))
+            # self._game.piecePosition = tuple(map(lambda x: int(x), values[1].split(',')))
+            self._game.piecePosition = tuple([int(x) for x in values[1].split(',')])
 
-        elif  values[0] == 'this_piece_type':
+        elif values[0] == 'this_piece_type':
             self._game.piece = Piece.create(values[1])
 
-        elif  values[0] == 'next_piece_type':
+        elif values[0] == 'next_piece_type':
             self._game.nextPiece = Piece.create(values[1])
 
         elif values[0] == 'round':
@@ -63,9 +67,9 @@ class Parser:
             player = self._game.me
 
         if values[0] == 'field':
-            player.field.updateField(map(lambda r: map(lambda x: int(x), r.split(',')), values[1].split(';')))
+            # player.field.updateField(map(lambda r: map(lambda x: int(x), r.split(',')), values[1].split(';')))
+            player.field.updateField([[int(x) for x in r.split(',')] for r in values[1].split(';')])
         elif values[0] == 'combo':
             player.combo = values[1]
         elif values[0] == 'row_points':
             player.combo = values[1]
-

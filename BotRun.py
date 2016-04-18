@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# Python3.4*
+
 from sys import stdin, stdout
 
 from Bot import Planner

@@ -1,4 +1,8 @@
+# -*- coding: utf-8 -*-
+# Python3.4*
+
 from Bot.Strategies.RandomStrategy import RandomStrategy
+
 
 def create(strategyType, game):
     switcher = {
@@ -8,6 +12,7 @@ def create(strategyType, game):
     strategy = switcher.get(strategyType.lower())
 
     return Planner(strategy)
+
 
 class Planner:
     def __init__(self, strategy):

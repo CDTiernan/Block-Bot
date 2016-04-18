@@ -1,4 +1,7 @@
-from Player import Player
+# -*- coding: utf-8 -*-
+# Python3.4*
+
+from Bot.Game.Player import Player
 
 
 class Game:
@@ -13,4 +16,3 @@ class Game:
         self.piecePosition = None
         self.nextPiece = None
         self.round = 0
-

@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# Python3.4*
+
 
 def create(type):
     switcher = {
@@ -11,6 +14,7 @@ def create(type):
     }
 
     return switcher.get(type.upper())
+
 
 class Piece:
     def __init__(self):
@@ -38,6 +42,7 @@ class Piece:
     def appendRotation(self, rotation):
         self._rotations.append(rotation)
 
+
 class LPiece(Piece):
     def __init__(self):
         Piece.__init__(self)
@@ -47,10 +52,12 @@ class LPiece(Piece):
         self._rotations.append([[0, 1], [1, 1], [2, 1], [0, 2]])
         self._rotations.append([[0, 0], [1, 0], [1, 1], [1, 2]])
 
+
 class OPiece(Piece):
     def __init__(self):
         Piece.__init__(self)
         self._rotations.append([[0, 0], [1, 0], [0, 1], [1, 1]])
+
 
 class IPiece(Piece):
     def __init__(self):
@@ -61,6 +68,7 @@ class IPiece(Piece):
         # self._rotations.append([[0, 2], [1, 2], [2, 2], [3, 2]])
         # self._rotations.append([[1, 0], [1, 1], [1, 2], [1, 3]])
 
+
 class JPiece(Piece):
     def __init__(self):
         Piece.__init__(self)
@@ -69,6 +77,7 @@ class JPiece(Piece):
         self._rotations.append([[1, 0], [2, 0], [1, 1], [1, 2]])
         self._rotations.append([[0, 1], [1, 1], [2, 1], [2, 2]])
         self._rotations.append([[1, 0], [1, 1], [0, 2], [1, 2]])
+
 
 class SPiece(Piece):
     def __init__(self):
@@ -79,6 +88,7 @@ class SPiece(Piece):
         # self._rotations.append([[1, 1], [2, 1], [0, 2], [1, 2]])
         # self._rotations.append([[0, 0], [0, 1], [1, 1], [1, 2]])
 
+
 class TPiece(Piece):
     def __init__(self):
         Piece.__init__(self)
@@ -87,6 +97,7 @@ class TPiece(Piece):
         self._rotations.append([[1, 0], [1, 1], [2, 1], [1, 2]])
         self._rotations.append([[0, 1], [1, 1], [2, 1], [1, 2]])
         self._rotations.append([[1, 0], [0, 1], [1, 1], [1, 2]])
+
 
 class ZPiece(Piece):
     def __init__(self):

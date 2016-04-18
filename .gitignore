@@ -2,3 +2,9 @@
 *.zip
 *.rar
 *.tar.gz
+
+#compiled code
+*.pyc
+
+#pycache
+__pycache__/

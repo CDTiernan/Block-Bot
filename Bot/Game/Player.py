@@ -1,4 +1,7 @@
-from Field import Field
+# -*- coding: utf-8 -*-
+# Python3.4*
+
+from Bot.Game.Field import Field
 
 
 class Player:
