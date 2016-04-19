@@ -43,4 +43,4 @@ class Bot:
 
 
 if __name__ == '__main__':
-    Bot("random").run()
+    Bot("ctstrat").run()

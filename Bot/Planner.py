@@ -2,11 +2,13 @@
 # Python3.4*
 
 from Bot.Strategies.RandomStrategy import RandomStrategy
+from Bot.Strategies.CTStrategy import CTStrategy
 
 
 def create(strategyType, game):
     switcher = {
-        "random": RandomStrategy(game)
+        "random": RandomStrategy(game),
+        "ctstrat": CTStrategy(game)
     }
 
     strategy = switcher.get(strategyType.lower())

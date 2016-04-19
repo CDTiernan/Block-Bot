@@ -8,3 +8,9 @@
 
 #pycache
 __pycache__/
+
+#os files
+.DS_Store
+
+#log  files
+*.txt

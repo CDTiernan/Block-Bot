@@ -61,3 +61,15 @@ class Field:
             return field
         else:
             return None
+
+    def toString(self, f):
+        stringField = ''
+        for row in f:
+            for element in row:
+                stringField += str(element)+' '
+            stringField += '\n'
+        stringField += '\n'
+
+        return stringField
+
+    
