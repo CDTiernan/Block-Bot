@@ -20,6 +20,8 @@ class CTStrategy(AbstractStrategy):
 
         #t0 = time.time()
 
+        t0 = time.time()
+        log.write("t0: "+ str(t0-t0)+"\n\n")
         #to_write = "ROUND: " + str(self._game.round) + "\n"
         #log.write(to_write)
 
@@ -33,6 +35,10 @@ class CTStrategy(AbstractStrategy):
 
         #to_write = cur_field.toString(cur_field.field)
         #log.write(to_write)
+
+
+        t2 = time.time()
+        log.write("t2: "+ str(t2-t0)+"\n\n")
 
         backup_field = cur_field.field
         max_score = -100000
@@ -61,6 +67,10 @@ class CTStrategy(AbstractStrategy):
             # turn the first piece once
             piece.turnRight(times=1)
 
+
+        t3 = time.time()
+        log.write("t3: "+ str(t3-t0)+"\n\n")
+
         #t1 = time.time() - t0
         #log.write("t1: "+str(t1)+"\n")
         #log.write(str(best_piece_rotation) + "\n\n")
@@ -78,6 +88,10 @@ class CTStrategy(AbstractStrategy):
                 moves.append('right')
             elif position_diff > 0:
                 moves.append('left')
+
+
+        t4 = time.time()
+        log.write("t4: "+ str(t4-t0)+"\n\n")
 
         # always drop at end of turn
         moves.append('drop')

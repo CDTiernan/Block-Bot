@@ -65,11 +65,10 @@ class Field:
     def toString(self, f):
         stringField = ''
         for row in f:
+            #if 2 in row or 4 in row or 3 in row:
             for element in row:
                 stringField += str(element)+' '
             stringField += '\n'
         stringField += '\n'
 
         return stringField
-
-    

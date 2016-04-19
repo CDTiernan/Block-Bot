@@ -43,4 +43,4 @@ class Bot:
 
 
 if __name__ == '__main__':
-    Bot("ctstrat").run()
+    Bot("ctstratsmart2block").run()
