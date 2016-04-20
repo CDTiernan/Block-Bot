@@ -11,9 +11,9 @@ import time
 class CTStrategySmartTwoBlock(AbstractStrategy):
     def __init__(self, game, params):
         # set up #loggin file for strategy
-        log = open("stratOut.txt", 'w')
+        #log = open("stratOut.txt", 'w')
         #log.write("INIT")
-        log.close()
+        #log.close()
 
         AbstractStrategy.__init__(self, game)
         self._actions = ['left', 'right', 'turnleft', 'turnright', 'down', 'drop']
@@ -27,10 +27,10 @@ class CTStrategySmartTwoBlock(AbstractStrategy):
         self.bumpiness_weight = params['bumpiness_weight']
 
     def choose(self):
-        log = open("stratOut.txt", 'a')
+        #log = open("stratOut.txt", 'a')
 
-        t0 = time.time()
-        log.write("t0: "+ str(t0-t0)+"\n")
+        #t0 = time.time()
+        #log.write("t0: "+ str(t0-t0)+"\n")
 
         #to_write = "ROUND: " + str(self._game.round) + "\n"
         #log.write(to_write)
@@ -44,8 +44,8 @@ class CTStrategySmartTwoBlock(AbstractStrategy):
         game_round = self._game.round
 
 
-        to_write = cur_field.toString(cur_field.field)
-        log.write(to_write)
+        #to_write = cur_field.toString(cur_field.field)
+        #log.write(to_write)
 
         #to_write = cur_field.toString(self.memorized_field)
         #log.write(to_write)
@@ -80,7 +80,7 @@ class CTStrategySmartTwoBlock(AbstractStrategy):
                     for next_piece_rotations in range(len(next_piece._rotations)):
                         # and all the next piece positions (only x again)
                         rand_cols = list(range(-2,cur_field.width))
-                        #random.shuffle(rand_cols)
+                        random.shuffle(rand_cols)
                         for next_piece_positions in rand_cols: #range(-2,cur_field.width):
 
                             # test if valid field
@@ -126,7 +126,7 @@ class CTStrategySmartTwoBlock(AbstractStrategy):
             for next_piece_rotations in range(len(next_piece._rotations)):
                 # and all the next piece positions (only x again)
                 rand_cols = list(range(-2,cur_field.width))
-                #random.shuffle(rand_cols)
+                random.shuffle(rand_cols)
                 for next_piece_positions in rand_cols: #range(-2,cur_field.width):# test if valid field
 
                     test_field = cur_field.projectPieceDown(next_piece, [next_piece_positions,0])
@@ -151,7 +151,7 @@ class CTStrategySmartTwoBlock(AbstractStrategy):
 
 
         t2 = time.time()
-        log.write("t2: "+ str(t2-t0)+"\n")
+        #log.write("t2: "+ str(t2-t0)+"\n")
 
         for _ in range(best_piece_rotation):
             #log.write("turning right\n\n")
@@ -177,7 +177,7 @@ class CTStrategySmartTwoBlock(AbstractStrategy):
 
         #log.write("t2: "+str(t2)+"\n")
 
-        log.close()
+        #log.close()
         return moves
 
     def calculate_field_score(self, possible_field):
