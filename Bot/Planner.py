@@ -8,12 +8,12 @@ from Bot.Strategies.CTStrategySmartTwoBlock import CTStrategySmartTwoBlock
 
 
 
-def create(strategyType, game):
+def create(strategyType, game, params):
     switcher = {
         "random": RandomStrategy(game),
         "ctstrat": CTStrategy(game),
         "ctstrat2block": CTStrategyTwoBlock(game),
-        "ctstratsmart2block": CTStrategySmartTwoBlock(game)
+        "ctstratsmart2block": CTStrategySmartTwoBlock(game,params)
     }
 
     strategy = switcher.get(strategyType.lower())

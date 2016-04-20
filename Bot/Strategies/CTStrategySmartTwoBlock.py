@@ -5,12 +5,12 @@ from random import randint
 from Bot.Strategies.AbstractStrategy import AbstractStrategy
 from Bot.Game.Field import Field
 from multiprocessing import Pool
-import numpy as np
+import random
 import time
 
 class CTStrategySmartTwoBlock(AbstractStrategy):
-    def __init__(self, game):
-        # set up loggin file for strategy
+    def __init__(self, game, params):
+        # set up #loggin file for strategy
         log = open("stratOut.txt", 'w')
         #log.write("INIT")
         log.close()
@@ -21,11 +21,16 @@ class CTStrategySmartTwoBlock(AbstractStrategy):
         self.best_next_piece_position = None
         self.memorized_field = game.me.field.field
 
+        self.height_weight = params['height_weight']
+        self.holes_weight = params['holes_weight']
+        self.lines_weight = params['lines_weight']
+        self.bumpiness_weight = params['bumpiness_weight']
+
     def choose(self):
         log = open("stratOut.txt", 'a')
 
-        #t0 = time.time()
-        #log.write("t0: "+ str(t0-t0)+"\n")
+        t0 = time.time()
+        log.write("t0: "+ str(t0-t0)+"\n")
 
         #to_write = "ROUND: " + str(self._game.round) + "\n"
         #log.write(to_write)
@@ -62,43 +67,46 @@ class CTStrategySmartTwoBlock(AbstractStrategy):
             # loop through all the first piece rotations
             for piece_rotations in range(len(piece._rotations)):
                 # and all the first piece positoins (x only cuz projecting down)
-                for piece_positions in np.random.permutation(cur_field.width)-2: #range(-2,cur_field.width):
+                #for piece_positions in range(-2,cur_field.width):
 
-                    # project and test if valid field
-                    test_field = cur_field.projectPieceDown(piece, [piece_positions,0])
-                    if test_field:
-                        # update the field to place second piece
-                        cur_field.updateField(test_field)
+                # project and test if valid field
+                #test_field = cur_field.projectPieceDown(piece, [piece_positions,0])
+                test_field = cur_field.projectPieceDown(piece, [3,0])
+                if test_field:
+                    # update the field to place second piece
+                    cur_field.updateField(test_field)
 
-                        # loop through all the next piece rotations
-                        for next_piece_rotations in range(len(next_piece._rotations)):
-                            # and all the next piece positions (only x again)
-                            for next_piece_positions in range(-2,cur_field.width):
+                    # loop through all the next piece rotations
+                    for next_piece_rotations in range(len(next_piece._rotations)):
+                        # and all the next piece positions (only x again)
+                        rand_cols = list(range(-2,cur_field.width))
+                        #random.shuffle(rand_cols)
+                        for next_piece_positions in rand_cols: #range(-2,cur_field.width):
 
-                                # test if valid field
-                                test_field = cur_field.projectPieceDown(next_piece, [next_piece_positions,0])
-                                if test_field:
-                                    #log.write(cur_field.toString(test_field))
+                            # test if valid field
+                            test_field = cur_field.projectPieceDown(next_piece, [next_piece_positions,0])
+                            if test_field:
+                                #log.write(cur_field.toString(test_field))
 
-                                    # get score of possible board layout
-                                    score = self.calculate_field_score(test_field)
-                                    #fields.append(np.array(test_field))
+                                # get score of possible board layout
+                                score = self.calculate_field_score(test_field)
+                                #fields.append(np.array(test_field))
 
-                                    #log.write(str(score)+" "+str(max_score)+"\n")
+                                #log.write(str(score)+" "+str(max_score)+"\n")
 
-                                    if score > max_score:
-                                        max_score = score
-                                        best_piece_rotation = piece_rotations
-                                        best_piece_position = piece_positions
-                                        self.best_next_piece_rotation = next_piece_rotations
-                                        self.best_next_piece_position = next_piece_positions
-                                        self.memorized_field = test_field
+                                if score > max_score:
+                                    max_score = score
+                                    best_piece_rotation = piece_rotations
+                                    best_piece_position = 3
+                                    self.best_next_piece_rotation = next_piece_rotations
+                                    self.best_next_piece_position = next_piece_positions
+                                    self.memorized_field = test_field
 
-                            # turn the next piece once
-                            next_piece.turnRight(times=1)
+                        # turn the next piece once
+                        next_piece.turnRight(times=1)
 
-                        # revert to current board layout to try next first piece place
-                        cur_field.updateField(backup_field)
+                    # revert to current board layout to try next first piece place
+                    cur_field.updateField(backup_field)
 
                 # turn the first piece once
                 piece.turnRight(times=1)
@@ -117,7 +125,9 @@ class CTStrategySmartTwoBlock(AbstractStrategy):
             # loop through all the next piece rotations
             for next_piece_rotations in range(len(next_piece._rotations)):
                 # and all the next piece positions (only x again)
-                for next_piece_positions in range(-2,cur_field.width):# test if valid field
+                rand_cols = list(range(-2,cur_field.width))
+                #random.shuffle(rand_cols)
+                for next_piece_positions in rand_cols: #range(-2,cur_field.width):# test if valid field
 
                     test_field = cur_field.projectPieceDown(next_piece, [next_piece_positions,0])
                     if test_field:
@@ -140,8 +150,8 @@ class CTStrategySmartTwoBlock(AbstractStrategy):
 
 
 
-        #t2 = time.time()
-        #log.write("t2: "+ str(t2-t0)+"\n")
+        t2 = time.time()
+        log.write("t2: "+ str(t2-t0)+"\n")
 
         for _ in range(best_piece_rotation):
             #log.write("turning right\n\n")
@@ -175,7 +185,7 @@ class CTStrategySmartTwoBlock(AbstractStrategy):
 
         holes, complete_lines, total_height, bumpiness = self.get_features(possible_field)
 
-        score = -2.510066 * total_height + 0.760666 * complete_lines + -0.35663 * holes + -0.184483 * bumpiness
+        score = self.height_weight * total_height + self.lines_weight * complete_lines + self.holes_weight * holes + self.bumpiness_weight * bumpiness
 
         return score
 
