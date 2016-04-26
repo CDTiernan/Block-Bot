@@ -48,7 +48,9 @@ if __name__ == '__main__':
         'height_weight' : -0.510066,
         'lines_weight' : 0.760666,
         'holes_weight' : -0.35663,
-        'bumpiness_weight' : -0.184483
+        'bumpiness_weight' : -0.184483,
+        'valleys_weight' : 3.0,
+        'name' : 'default'
     }
     for arg in argv[1:]:
         arg_array = arg.split("=",2)
@@ -65,5 +67,11 @@ if __name__ == '__main__':
         if arg_array[0] == "bumpiness_weight":
             params['bumpiness_weight'] = float(arg_array[1])
 
+        if arg_array[0] == "valleys_weight":
+            params['valleys_weight'] = float(arg_array[1])
+
+        if arg_array[0] == "name":
+            params['name'] = str(arg_array[1])
+
     #print(params)
-    Bot("ctstratsmart2block",params).run()
+    Bot("ctstratquick",params).run()

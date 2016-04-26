@@ -16,6 +16,13 @@ class Field:
     def updateField(self, field):
         self.field = field
 
+    def projectPiece(self, piece, offset):
+        piecePositions = self.__offsetPiece(piece.positions(), [offset[0],offset[1]])
+
+        field = self.fitPiece(piecePositions, [0, 0])
+        
+        return field
+
     def projectPieceDown(self, piece, offset):
         piecePositions = self.__offsetPiece(piece.positions(), offset)
 
@@ -29,6 +36,22 @@ class Field:
 
         return field
 
+    def get_pojected_piece_offset(self, piece, offset):
+        piecePositions = self.__offsetPiece(piece.positions(), offset)
+
+        field = None
+        offset_x = offset[0]
+        offset_y = 0
+        for height in range(self.height, -1, -1):
+            tmp = self.fitPiece(piecePositions, [0, height])
+
+            if tmp:
+                field = tmp
+                offset_y = height
+                break
+
+        return field, [offset_x, offset_y]
+
     @staticmethod
     def __offsetPiece(piecePositions, offset):
         piece = copy.deepcopy(piecePositions)
@@ -39,6 +62,15 @@ class Field:
         return piece
 
     def __checkIfPieceFits(self, piecePositions):
+        for x, y in piecePositions:
+            if 0 <= x < self.width and 0 <= y < self.height:
+                if self.field[y][x] > 1:
+                    return False
+            else:
+                return False
+        return True
+
+    def __check_if_piece_fits_snug(self, piecePositions):
         for x, y in piecePositions:
             if 0 <= x < self.width and 0 <= y < self.height:
                 if self.field[y][x] > 1:
