@@ -8,7 +8,7 @@ import time
 import copy
 import sys
 from heapq import heappop, heappush, nlargest
-from Bot.Game.TetrisGraph import Graph
+from Bot.Helpers.TetrisGraph import Graph
 
 '''
  This is a strategy based off a hueristic that ranks possible field states based off extracted features and weights

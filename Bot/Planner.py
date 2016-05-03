@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Python3.4*
 
+from Bot.Strategies.RandomStrategy import RandomStrategy
 from Bot.Strategies.CTStrategy import CTStrategy
 from Bot.Strategies.CTStrategyTwoBlock import CTStrategyTwoBlock
 
@@ -9,7 +10,8 @@ from Bot.Strategies.CTStrategyTwoBlock import CTStrategyTwoBlock
 def create(strategyType, game, params):
     switcher = {
         "ct": CTStrategy(game),
-        "ct2b": CTStrategyTwoBlock(game,params)
+        "ct2b": CTStrategyTwoBlock(game,params),
+        "r": RandomStrategy(game)
     }
 
     strategy = switcher.get(strategyType.lower())
