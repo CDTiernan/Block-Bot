@@ -53,7 +53,7 @@ if __name__ == '__main__':
         'name' : 'default'
     }
 
-    bot_strats = ['ct','ct2b']
+    bot_strats = ['ct','ct2b','r']
     bot_strat = 'ct2b'
     # gets args from the console command (if they exist) and overwrites default parameters
     for arg in argv[1:]:
