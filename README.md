@@ -27,3 +27,8 @@ CTStrategy looks one Tromino in advance to make decisions. Features and weights 
 CTStrategyTwoBlock looks two Trominoes in advance to make decisions. Features are similar but modified from Yiyuan Lee's, and weights are learned using a genetic algorithm.
 
 CTStrategyTwoBlock also takes advantage of more optimized piece projection and can recognize covered positions and other Tromino positions that cannot be dropped into. This is done using TetrisGraph, which is a best first search algorihtm that finds valid moves for Trominos.
+
+----
+
+### More Information
+A detailed report of my bot and experience can be found in my [Final Report](https://github.com/CDTiernan/Block-Bot/tree/master/Documentation) in the Documentation/ directory.
