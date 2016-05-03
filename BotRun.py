@@ -52,9 +52,15 @@ if __name__ == '__main__':
         'valleys_weight' : 1.4400243626054037,
         'name' : 'default'
     }
+
+    bot_strats = ['ct','ct2b']
+    bot_strat = 'ct2b'
     # gets args from the console command (if they exist) and overwrites default parameters
     for arg in argv[1:]:
         arg_array = arg.split("=",2)
+
+        if arg_array[0] == "bot_strat":
+            bot_strat = str(arg_array[1])
 
         if arg_array[0] == "height_weight":
             params['height_weight'] = float(arg_array[1])
@@ -74,5 +80,8 @@ if __name__ == '__main__':
         if arg_array[0] == "name":
             params['name'] = str(arg_array[1])
 
+
+    if bot_strat not in bot_strats:
+        print ("Strategey "+ bot_strat +" is not recognized. Add it or try a valid one.\n"+ bot_strats )
     # define parameters and strategy to use
     Bot("ct2b",params).run()
