@@ -1,0 +1,1 @@
+java -cp bin com.theaigames.blockbattle.Blockbattle "python3 /Users/Computer/Desktop/Block-Engine/Block-Bots/CT-Bot/BotRun.py" "python3 /Users/Computer/Desktop/Block-Engine/Block-Bots/sp3-Bot/BotRun.py" 2>err.txt 1>out.txt

@@ -54,7 +54,13 @@ class Piece:
     def appendRotation(self, rotation):
         self._rotations.append(rotation)
 
-
+'''
+    Each piece has a defined xy cords within a 4 by 4 box placed on the field. I added xy limits to each rotation and
+    cords to the lowest part of the piece in each rotation
+        self._rotations: the xy cordnates of the piece with respect to its rotation index
+        self._field_positions: the x limits of a pieces movement on a field with respect to its rotation index
+        self._lowest_col_position: the x coordnates of the pieces lowest piece with respect to its rotation index
+'''
 class LPiece(Piece):
     def __init__(self):
         Piece.__init__(self)

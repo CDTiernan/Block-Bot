@@ -16,11 +16,17 @@ class Field:
     def updateField(self, field):
         self.field = field
 
+    '''
+     Paired down projectPieceDown, instead of pushing the piece down until it produces an invalid board
+     this method simply tries to put the piece at the defnined offset, returning a valid field or None.
+     This is much less computationally demanding than projectPieceDown and allows my strategy to pick offsets
+     effectively and therefore try less useless states.
+    '''
     def projectPiece(self, piece, offset):
         piecePositions = self.__offsetPiece(piece.positions(), [offset[0],offset[1]])
 
         field = self.fitPiece(piecePositions, [0, 0])
-        
+
         return field
 
     def projectPieceDown(self, piece, offset):
@@ -36,6 +42,9 @@ class Field:
 
         return field
 
+    '''
+     Same as projectPieceDown, but also returns the offset of the piece
+    '''
     def get_pojected_piece_offset(self, piece, offset):
         piecePositions = self.__offsetPiece(piece.positions(), offset)
 

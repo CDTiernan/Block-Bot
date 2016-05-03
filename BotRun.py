@@ -43,15 +43,16 @@ class Bot:
 
 
 if __name__ == '__main__':
-    #TODO: get params from terminals
+    # default parameters using which the bot will score board states
     params = {
-        'height_weight' : -0.510066,
-        'lines_weight' : 0.760666,
-        'holes_weight' : -0.35663,
-        'bumpiness_weight' : -0.184483,
-        'valleys_weight' : 3.0,
+        'height_weight' : -2.93969377104926,
+        'lines_weight' : 1.8838043309144208,
+        'holes_weight' : -1.0982709295643653,
+        'bumpiness_weight' : -0.5442373651415795,
+        'valleys_weight' : 1.4400243626054037,
         'name' : 'default'
     }
+    # gets args from the console command (if they exist) and overwrites default parameters
     for arg in argv[1:]:
         arg_array = arg.split("=",2)
 
@@ -73,5 +74,5 @@ if __name__ == '__main__':
         if arg_array[0] == "name":
             params['name'] = str(arg_array[1])
 
-    #print(params)
-    Bot("ctstratquick",params).run()
+    # define parameters and strategy to use
+    Bot("ct2b",params).run()

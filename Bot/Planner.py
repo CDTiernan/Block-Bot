@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 # Python3.4*
 
-from Bot.Strategies.CTStrategyQuickMoves import CTStrategyQuickMoves
+from Bot.Strategies.CTStrategy import CTStrategy
+from Bot.Strategies.CTStrategyTwoBlock import CTStrategyTwoBlock
 
 
 
 def create(strategyType, game, params):
     switcher = {
-        "ctstratquick": CTStrategyQuickMoves(game,params)
+        "ct": CTStrategy(game),
+        "ct2b": CTStrategyTwoBlock(game,params)
     }
 
     strategy = switcher.get(strategyType.lower())

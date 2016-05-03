@@ -4,170 +4,294 @@
 from random import randint
 from Bot.Strategies.AbstractStrategy import AbstractStrategy
 from Bot.Game.Field import Field
-from multiprocessing import Pool
 import time
+import copy
+import sys
+from heapq import heappop, heappush, nlargest
+from Bot.Game.TetrisGraph import Graph
+
+'''
+ This is a strategy based off a hueristic that ranks possible field states based off extracted features and weights
+ learned from a genetic algorithm. It takes into account both the falling piece and the next piece, trying
+ every rotation and position for both pieces and placing them in a heap. After all possible fields are tested,
+ the top scoring fields are then tested to see if the falling piece can be moved to the desired position on the board.
+ Once a valid set of moves for the first piece have been found the move list is compiled and sent to the server.
+'''
 
 class CTStrategyTwoBlock(AbstractStrategy):
-    def __init__(self, game):
-        # set up loggin file for strategy
-        #log = open("stratOut.txt", 'w')
-        #log.write("INIT")
-        #log.close()
-
+    def __init__(self, game, params):
         AbstractStrategy.__init__(self, game)
-        self._actions = ['left', 'right', 'turnleft', 'turnright', 'down', 'drop']
-        self.memorized_field = game.me.field.field
+
+        self.memorized_field = None
+        self.col_heights = [0]*game.me.field.width
+
+        self.height_weight = params['height_weight']
+        self.holes_weight = params['holes_weight']
+        self.lines_weight = params['lines_weight']
+        self.bumpiness_weight = params['bumpiness_weight']
+        self.valleys_weight = params['valleys_weight']
+
 
     def choose(self):
-        #log = open("stratOut.txt", 'a')
+        try:
+            cur_field = self._game.me.field
 
-        #t0 = time.time()
-        #log.write("t0: "+ str(t0-t0)+"\n")
+            # update the memorized field
+            self.memorized_field = copy.deepcopy(cur_field)
 
-        #to_write = "ROUND: " + str(self._game.round) + "\n"
-        #log.write(to_write)
+            piece = self._game.piece
+            piece_pos = self._game.piecePosition
+            next_piece = self._game.nextPiece
+            game_round = self._game.round
 
+            '''
+            Try all possible piece and next piece rotations
+            '''
+
+            # if the game is past the first round get the column heights (used to pick where to place pieces)
+            if game_round != 1:
+                self.get_col_heights(self.memorized_field.field)
+
+
+            next_state_data = []
+            piece_fields, piece_offsets, piece_rotations = self.get_possible_fields_offsets(piece,self.memorized_field)
+            # for all the possible field states based of the first piece
+            for piece_idx in range(len(piece_fields)):
+                # extract the piece info from the field
+                piece_offset = piece_offsets[piece_idx]
+                piece_field = piece_fields[piece_idx]
+                piece_rotation = piece_rotations[piece_idx]
+
+                # update the memorized_field to test the second piece
+                self.memorized_field.updateField(piece_field)
+                # get the column heights (used to pick where to place pieces)
+                self.get_col_heights(self.memorized_field.field)
+
+                next_piece_fields, next_piece_offsets, next_piece_rotations = self.get_possible_fields_offsets(next_piece,self.memorized_field)
+                # for all the possible field states based of the second piece and the first piece
+                for next_piece_idx in range(len(next_piece_fields)):
+                    # extract the piece info from the field
+                    next_piece_offset = next_piece_offsets[next_piece_idx]
+                    next_piece_field = next_piece_fields[next_piece_idx]
+                    next_piece_rotation = next_piece_rotations[next_piece_idx]
+
+                    # calculate the score of the field
+                    score = self.calculate_field_score(next_piece_field)
+
+                    # compile all needed info and heappush it onto a list
+                    params = [piece_field, piece, piece_offset, next_piece_field, next_piece, next_piece_offset, piece_rotation]
+                    # heappush is used to keep order of all the fields by score (we want to escape the best fields first)
+                    heappush(next_state_data, (score, params))
+
+                # reset the memorized field so a new first piece block position can be tested
+                self.memorized_field.updateField(cur_field.field)
+
+            '''
+            Handle finding best moves
+            '''
+            moves = None
+            # get the top 25 scoring fields from the heap
+            for (score,params) in nlargest(25, next_state_data):
+                # escape the piece (get the moves needed to get the piece into position)
+                moves = self.escape_piece(params)
+                # if there are valid moves to get the piece to the desired position break the loop and tell the server
+                if moves:
+                    break
+
+            # always drop the piece at the end of moves
+            moves.append('drop')
+
+            return moves
+
+        except:
+            return moves.append('no_moves')
+
+    '''
+     Uses the TetrisGraph to find out if the possible field is valid (aka there are a set of moves that
+     can be executed to get the piece into the position desired on the field)
+    '''
+    def escape_piece(self, params):
         moves = []
 
-        cur_field = self._game.me.field
-        piece = self._game.piece
-        piece_pos = self._game.piecePosition
-        next_piece = self._game.nextPiece
+        cur_offset = self._game.piecePosition
+        cur_rotation = 0
 
+        piece_field = params[0]
+        piece = params[1]
+        piece_offset = params[2]
+        piece_rotation = params[6]
 
-        #to_write = cur_field.toString(self.memorized_field)
-        #log.write(to_write)
+        next_piece_field = params[3]
+        next_piece = params[4]
+        next_piece_offsett = params[5]
+        next_piece_rotation = next_piece._rotateIndex
 
-        backup_field = cur_field.field
-        max_score = -100000
-        best_piece_rotation = None
-        best_piece_position = None
-        best_next_piece_rotation = None
-        best_next_piece_position = None
+        # initialized the graph with all the field and piece information
+        g = Graph(list(cur_offset), cur_rotation, piece_offset, piece_rotation, self.memorized_field, piece)
+        # if the graph can escape the piece moves will be set to a list of moves, otherwise it will be set to None
+        moves = g.escape()
 
-
-        #t1 = time.time()
-        #log.write("t1: "+ str(t1-t0)+"\n")
-
-        #pool = Pool()
-        #fields = []
-        # loop through all the first piece rotations
-        for piece_rotations in range(len(piece._rotations)):
-            # and all the first piece positoins (x only cuz projecting down)
-            for piece_positions in range(-2,cur_field.width):
-
-                # project and test if valid field
-                test_field = cur_field.projectPieceDown(piece, [piece_positions,0])
-                if test_field:
-                    # update the field to place second piece
-                    cur_field.updateField(test_field)
-
-                    # loop through all the next piece rotations
-                    for next_piece_rotations in range(len(next_piece._rotations)):
-                        # and all the next piece positions (only x again)
-                        for next_piece_positions in range(-2,cur_field.width):
-
-                            # test if valid field
-                            test_field = cur_field.projectPieceDown(next_piece, [next_piece_positions,0])
-                            if test_field:
-                                #log.write(cur_field.toString(test_field))
-
-                                # get score of possible board layout
-                                score = self.calculate_field_score(test_field)
-                                #fields.append(np.array(test_field))
-
-                                #log.write(str(score)+" "+str(max_score)+"\n")
-
-                                if score > max_score:
-                                    max_score = score
-                                    best_piece_rotation = piece_rotations
-                                    best_piece_position = piece_positions
-                                    best_next_piece_rotation = next_piece_rotations
-                                    best_next_piece_position = next_piece_positions
-                                    self.memorized_field = test_field
-
-                        # turn the next piece once
-                        next_piece.turnRight(times=1)
-
-                    # revert to current board layout to try next first piece place
-                    cur_field.updateField(backup_field)
-
-            # turn the first piece once
-            piece.turnRight(times=1)
-
-
-        t2 = time.time()
-        #log.write("t2: "+ str(t2-t0)+"\n")
-
-        for _ in range(best_piece_rotation):
-            #log.write("turning right\n\n")
-            moves.append('turnright')
-
-
-        t3 = time.time()
-        #log.write("t3: "+ str(t3-t0)+"\n")
-
-        position_diff = piece_pos[0] - best_piece_position
-        position_abs_diff = abs(position_diff)
-        for _ in range(position_abs_diff):
-            if position_diff < 0:
-                moves.append('right')
-            elif position_diff > 0:
-                moves.append('left')
-
-
-        #t4 = time.time()
-        #log.write("t4: "+ str(t4-t0)+"\n\n")
-
-        # always drop at end of turn
-        moves.append('drop')
-
-        #log.write("t2: "+str(t2)+"\n")
-
-        #log.close()
         return moves
 
-    def calculate_field_score(self, possible_field):
+    '''
+     Itterates through all of the piece rotations and positions allowed on the board to find all possible
+     states created by taking action on the piece
+    '''
+    def get_possible_fields_offsets(self, piece, field):
+        fields = []
+        piece_offsets = []
+        piece_rotations = []
+
+        # for all rotations
+        for piece_r in range(len(piece._rotations)):
+            # get the limits of movement for the piece and the lowest part of the piece (used to guess where it will fi or not)
+            piece_x_lims = piece.get_x_pos_lims()
+            piece_x_check_pos = piece.get_x_check_pos()
+            # for all x positions the piece can take
+            for piece_x in range(piece_x_lims[0],piece_x_lims[1]):
+                # get the hieght of the column (to initially test at this hieght, not every height higher then traversing down)
+                col_to_check = piece_x + (self.memorized_field.width - piece_x_check_pos[1])
+                col_height = self.col_heights[col_to_check]
+
+                piece_y_lims = piece.get_y_pos_lims()
+                y_min = field.height + piece_y_lims[0] - col_height
+
+                # for all y positions the piece can take
+                for piece_y in range(y_min, piece_y_lims[1],-1):
+                    # project the field. returns a valid field or None if the piece position is invalid
+                    test_field = field.projectPiece(piece, [piece_x,piece_y])
+
+                    # if the field is valid
+                    if test_field:
+                        # store the field, piece offset and rotation
+                        fields.append(test_field)
+                        piece_offsets.append([piece_x,piece_y])
+                        piece_rotations.append(piece._rotateIndex)
+                        break
+
+            piece.turnRight(times=1)
+
+        return fields, piece_offsets, piece_rotations
+
+
+    '''
+     This uses a hueristic to rank fields based on their features
+     - complete_lines:
+        - the number of full lines completed in the field (this only recieve points if there are more than 1 because no points are recieved for simply clearing 1 line)
+     - height:
+        - the total height of all the columns (including covered empty spaces)
+     - holes:
+        - the total number of covered empty spaces
+     - bumpiness:
+        - the sum off the column differences (left to right)
+     - has_valley:
+        - -1 if there is more than 1 valley of height 3+
+        - 0 if there is no valley of height 3+
+        - 1 if there is 1 valley of height 3+
+    '''
+    def calculate_field_score(self, possible_field, debug=False):
         score = 0
 
-        holes, complete_lines, total_height, bumpiness = self.get_features(possible_field)
+        # get the features
+        height, holes, bumpiness, lines, valleys = self.get_features(possible_field)
 
-        score = -0.510066 * total_height + 0.760666 * complete_lines + -0.35663 * holes + -0.184483 * bumpiness
+        # one line clears do not recieve points so discount the feature
+        point_getting_lines = lines - 1
+
+        # convert the valleys feature into a 3 val variable
+        if valleys == 0:
+            has_valley = 0
+        elif valleys == 1:
+            has_valley = 1
+        else:
+            has_valley = -1
+
+        # calculate score based off features and their weights
+        score = self.height_weight * height+ self.lines_weight * point_getting_lines + self.holes_weight * holes + self.bumpiness_weight * bumpiness + self.valleys_weight * has_valley
+
+        # if the move gets 3 or more lines, ALWAYS make it
+        if lines >= 3:
+            score = 10000
 
         return score
 
+    '''
+     Traverses a field, and extracts the needed features
+    '''
     def get_features(self,possible_field):
         width = len(possible_field[0])
         height = len(possible_field)
 
-        reversed_field = possible_field[::-1]
 
-        holes = 0.0
-        complete_lines = 0.0
-        total_height = 0.0
-        bumpiness = 0.0
+        total_height = 0
+        total_holes = 0
+        total_bumpiness = 0
 
-        cur_height = [0]*width
-        for y in range(height):
-            complete = True
-            if sum(reversed_field[y]) != 0:
-                for x in range(width):
+        last_col_height = -1
+        filled_row_counter = [0] * height
 
-                    if reversed_field[y][x] in (2,4):
-                        if y+1 >= (cur_height[x] + 2):
-                            holes += 1
+        total_valleys = 0
+        possible_valley = True
+        for x in range(width):
+            col_height = 0
+            col_holes = 0
+            last_cell_empty = 0
+            for y in range(height-1,-1,-1):
+                elem = possible_field[y][x]
+                if elem > 1:
+                    if last_cell_empty:
+                        col_holes += last_cell_empty
 
-                        cur_height[x] = y+1
+                    col_height = height-y
 
-                    else:
-                        complete = False
+                    if elem != 3:
+                        filled_row_counter[y] += 1
 
-                if complete:
-                    complete_lines += 1
+                    last_cell_empty = 0
+                else:
+                    last_cell_empty += 1
 
-        total_height = sum(cur_height)
+            self.col_heights[x] = col_height
 
-        for x in range(len(cur_height)-1):
-            bumpiness += abs(cur_height[x]-cur_height[x+1])
+            total_height += col_height
+            total_holes += col_holes
 
-        return holes, complete_lines, total_height, bumpiness
+            if last_col_height != -1:
+                total_bumpiness += abs(last_col_height-col_height)
+
+                if possible_valley and last_col_height-col_height <= -3:
+                    total_valleys += 1
+                    possible_valley = False
+
+                if last_col_height-col_height >= 3:
+                    possible_valley = True
+                else:
+                    possible_valley = False
+
+            last_col_height = col_height
+
+        if possible_valley:
+            total_valleys += 1
+
+        total_lines = 0
+        for num_elems in filled_row_counter:
+            if num_elems == width:
+                total_lines += 1
+
+        return total_height, total_holes, total_bumpiness, total_lines, total_valleys
+
+    '''
+     Paired down version of get_features() because column heights are needed more frequently than the other features
+    '''
+    def get_col_heights(self,possible_field):
+        width = len(possible_field[0])
+        height = len(possible_field)
+
+        for x in range(width):
+            col_height = 0
+            for y in range(height-1,-1,-1):
+                elem = possible_field[y][x]
+                if elem > 1:
+                    col_height = height-y
+
+            self.col_heights[x] = col_height
